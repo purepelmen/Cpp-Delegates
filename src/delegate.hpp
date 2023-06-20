@@ -1,36 +1,36 @@
-// --------------------------------------------------------
 // Cpp-Delegates is a single-header file mini-library.
 // Written by purepelmen. Use it the way you want.
+// --------------------------------------------------------
 
 #pragma once
 
 /// @brief C#-like delegate for C++.
-/// @tparam R Result type.
+/// @tparam Result Return type.
 /// @tparam ...Args All delegate arguments.
-template<typename R, typename... Args>
+template<typename Result, typename... Args>
 class delegate
 {
 public:
     template<typename T>
-    delegate(void* target, R(T::*funcPtr)(Args...))
+    delegate(void* target, Result(T::*funcPtr)(Args...))
     {
-        funcPtrUnion<R, T, Args...> funcPtrConverter;
-        funcPtrConverter.member_ptr = funcPtr;
+        converter<T> funcConverter;
+        funcConverter.member_ptr = funcPtr;
 
         this->target = target; 
-        this->func_ptr = funcPtrConverter.static_ptr;
+        this->func_ptr = funcConverter.static_ptr;
     }
     
-    delegate(R(*funcPtr)(Args...))
+    delegate(Result(*funcPtr)(Args...))
     {
         this->target = nullptr; 
-        this->func_ptr = (R(*)(...)) funcPtr;
+        this->func_ptr = (Result(*)(...)) funcPtr;
     }
 
     /// @brief Invoke a method or function, with or without args if needed.
     /// @param ...args All arguments can be specified here if needed.
     /// @return Return value or void.
-    R invoke(Args... args)
+    Result invoke(Args... args) const
     {
         if (target == nullptr)
         {
@@ -41,13 +41,13 @@ public:
     }
 
 private:
-    template<typename R, typename T, typename... Args>
-    union funcPtrUnion
+    template<typename T>
+    union converter
     {
-        R(T::*member_ptr)(Args...);
-        R(*static_ptr)(...);
+        Result(T::*member_ptr)(Args...);
+        Result(*static_ptr)(...);
     };
 
     void* target;
-    R(*func_ptr)(...);
+    Result(*func_ptr)(...);
 };
